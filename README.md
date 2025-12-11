@@ -1,4 +1,4 @@
-# ShortFlow v1
+# ShortPulse v1
 
 Performance-first Instagram Reels measurement stack. Ingest via Apify every 6 hours, store immutable raw events in Supabase/Postgres, derive percentiles for the last 7 days, and visualize on a dark-mode scatter plot.
 
