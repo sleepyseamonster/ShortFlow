@@ -9,7 +9,7 @@ Performance-first Instagram Reels measurement stack. Ingest via Apify every 6 ho
 
 ## Setup
 1) Duplicate `.env.example` to `.env` and fill in:
-   - `DATABASE_URL`: Supabase Postgres connection string (service role). For this project: `postgresql+psycopg2://postgres:<service-role-password>@db.jwmcytzyhcvacjwqtynn.supabase.co:5432/postgres`
+   - `DATABASE_URL`: Supabase Postgres connection string (service role). For this project: `postgresql+psycopg://postgres:<service-role-password>@db.jwmcytzyhcvacjwqtynn.supabase.co:5432/postgres`
    - `APIFY_API_TOKEN`, `APIFY_ACTOR_ID`: credentials + actor for Instagram recommended Reels feed.
 2) Backend dependencies:
    ```bash
