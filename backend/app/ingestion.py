@@ -9,7 +9,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from .config import settings
-from .models import IngestionRun, ReelLatestState, ReelRawEvent
+from .models import ReelLatestState, ReelRawEvent
 
 logger = logging.getLogger(__name__)
 
@@ -112,21 +112,18 @@ def fetch_apify_reels() -> List[Dict[str, object]]:
     return items, run_id
 
 
-def persist_events(session: Session, items: List[Dict[str, object]], apify_run_id: str) -> tuple[int, int, int]:
+def persist_events(session: Session, items: List[Dict[str, object]], apify_run_id: str) -> int:
     """Persist raw events and update the latest state snapshot."""
     scraped_at = datetime.now(timezone.utc)
     events: List[Dict[str, object]] = []
-    dropped = 0
     for item in items:
         mapped = _map_apify_item(item, scraped_at, apify_run_id)
         if mapped:
             events.append(mapped)
-        else:
-            dropped += 1
 
     if not events:
-        logger.warning("No valid events mapped from Apify run %s (dropped=%s)", apify_run_id, dropped)
-        return 0, 0, dropped
+        logger.warning("No valid events mapped from Apify run %s", apify_run_id)
+        return 0
 
     insert_stmt = insert(ReelRawEvent).values(events)
     do_nothing_stmt = insert_stmt.on_conflict_do_nothing(constraint="uq_reel_scrape_run")
@@ -173,37 +170,12 @@ def persist_events(session: Session, items: List[Dict[str, object]], apify_run_i
     )
     session.execute(latest_upsert)
     session.commit()
-    logger.info(
-        "Persisted %s new raw events for Apify run %s (mapped=%s, dropped=%s)",
-        inserted,
-        apify_run_id,
-        len(events),
-        dropped,
-    )
-    return inserted, len(events), dropped
+    logger.info("Persisted %s new raw events for Apify run %s", inserted, apify_run_id)
+    return inserted
 
 
 def run_ingestion(session: Session) -> Dict[str, object]:
     """Fetch data from Apify and persist to Supabase/Postgres."""
-    run = IngestionRun(platform=settings.default_platform, status="running", started_at=datetime.now(timezone.utc))
-    session.add(run)
-    session.commit()
-    session.refresh(run)
-
-    try:
-        items, run_id = fetch_apify_reels()
-        ingested, mapped, dropped = persist_events(session, items, run_id)
-        run.apify_run_id = run_id
-        run.events_ingested = ingested
-        run.status = "completed"
-        run.finished_at = datetime.now(timezone.utc)
-        session.commit()
-        return {"ingested_count": ingested, "apify_run_id": run_id, "mapped_count": mapped, "dropped_count": dropped}
-    except Exception as exc:
-        session.rollback()
-        run.status = "failed"
-        run.error_message = str(exc)
-        run.finished_at = datetime.now(timezone.utc)
-        session.add(run)
-        session.commit()
-        raise
+    items, run_id = fetch_apify_reels()
+    ingested = persist_events(session, items, run_id)
+    return {"ingested_count": ingested, "apify_run_id": run_id}

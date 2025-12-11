@@ -26,26 +26,16 @@ class ReelPerformance(BaseModel):
 class IngestResult(BaseModel):
     ingested_count: int
     apify_run_id: str
-    mapped_count: int
-    dropped_count: int
 
 
 class ReelPerformanceList(BaseModel):
     items: List[ReelPerformance]
 
 
-class IngestionRunSummary(BaseModel):
-    apify_run_id: Optional[str]
-    status: str
-    events_ingested: int
-    started_at: datetime
-    finished_at: Optional[datetime]
-    error_message: Optional[str]
-
-
 class IngestStatus(BaseModel):
     last_scraped_at: Optional[datetime]
-    latest_run: Optional[IngestionRunSummary]
+    last_apify_run_id: Optional[str]
+    events_last_run: int
     total_raw_events: int
     latest_state_count: int
     reels_published_last_7d: int

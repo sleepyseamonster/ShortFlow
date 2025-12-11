@@ -2,8 +2,6 @@
 
 Base URL defaults to `http://localhost:8000` (override with `NEXT_PUBLIC_API_BASE` for frontend).
 
-> Protected endpoints: `/ingest/run` and `/ingest/status` require `Authorization: Bearer <API_AUTH_TOKEN>` when `API_AUTH_TOKEN` is set.
-
 ## Health
 - `GET /health`
   - Response: `{"status": "ok", "environment": "<env>"}`.
@@ -11,7 +9,7 @@ Base URL defaults to `http://localhost:8000` (override with `NEXT_PUBLIC_API_BAS
 ## Manual ingestion
 - `POST /ingest/run`
   - Purpose: Trigger Apify run and persist results.
-  - Response: `{"ingested_count": <int>, "apify_run_id": "<run-id>", "mapped_count": <int>, "dropped_count": <int>}`.
+  - Response: `{"ingested_count": <int>, "apify_run_id": "<run-id>"}`.
   - Errors: 500 if Apify credentials are missing or the run fails.
 
 ## Ingestion status
@@ -21,14 +19,8 @@ Base URL defaults to `http://localhost:8000` (override with `NEXT_PUBLIC_API_BAS
     ```json
     {
       "last_scraped_at": "2025-12-11T00:00:00Z",
-      "latest_run": {
-        "apify_run_id": "abc123",
-        "status": "completed",
-        "events_ingested": 198,
-        "started_at": "2025-12-11T00:00:00Z",
-        "finished_at": "2025-12-11T00:02:00Z",
-        "error_message": null
-      },
+      "last_apify_run_id": "abc123",
+      "events_last_run": 198,
       "total_raw_events": 10234,
       "latest_state_count": 812,
       "reels_published_last_7d": 645
@@ -38,8 +30,6 @@ Base URL defaults to `http://localhost:8000` (override with `NEXT_PUBLIC_API_BAS
 ## Performance data
 - `GET /reels/performance`
   - Purpose: Return latest-state reels published in the last 7 days with derived metrics, percentiles, and performance score.
-  - Query params:
-    - `platform` (optional, default `instagram`)
   - Response:
     ```json
     {
@@ -66,3 +56,4 @@ Base URL defaults to `http://localhost:8000` (override with `NEXT_PUBLIC_API_BAS
     }
     ```
   - Notes: Scope is 7-day publishes only; no pagination yet.
+

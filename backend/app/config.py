@@ -14,8 +14,6 @@ class Settings(BaseSettings):
     apify_max_results: int = Field(200, env="APIFY_MAX_RESULTS")
     ingestion_interval_hours: int = Field(6, env="INGESTION_INTERVAL_HOURS")
     environment: str = Field("local", env="ENVIRONMENT")
-    api_auth_token: Optional[str] = Field(None, env="API_AUTH_TOKEN")
-    default_platform: str = Field("instagram", env="DEFAULT_PLATFORM")
 
     class Config:
         env_file = ".env"
@@ -30,3 +28,4 @@ def get_settings() -> Settings:
 
 
 settings = get_settings()
+

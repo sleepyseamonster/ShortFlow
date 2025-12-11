@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -10,7 +10,7 @@ from .config import settings
 from .db import get_session
 from .ingestion import run_ingestion
 from .metrics import attach_percentiles, compute_derived_metrics
-from .models import IngestionRun, ReelLatestState, ReelRawEvent
+from .models import ReelLatestState, ReelRawEvent
 from .schemas import IngestResult, IngestStatus, ReelPerformanceList
 from .scheduler import ingestion_scheduler
 
@@ -28,15 +28,6 @@ app.add_middleware(
 )
 
 
-def require_auth(authorization: str = Header(None)):
-    if settings.api_auth_token is None:
-        return True
-    expected = f"Bearer {settings.api_auth_token}"
-    if authorization != expected:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    return True
-
-
 @app.on_event("startup")
 async def startup_event():
     ingestion_scheduler.start()
@@ -52,7 +43,7 @@ async def health():
     return {"status": "ok", "environment": settings.environment}
 
 
-@app.post("/ingest/run", response_model=IngestResult, dependencies=[Depends(require_auth)])
+@app.post("/ingest/run", response_model=IngestResult)
 async def ingest_now(session: Session = Depends(get_session)):
     try:
         result = run_ingestion(session)
@@ -63,15 +54,11 @@ async def ingest_now(session: Session = Depends(get_session)):
 
 
 @app.get("/reels/performance", response_model=ReelPerformanceList)
-async def reels_performance(
-    session: Session = Depends(get_session),
-    platform: str = Query(default=settings.default_platform),
-):
+async def reels_performance(session: Session = Depends(get_session)):
     now = datetime.now(timezone.utc)
     seven_days_ago = now - timedelta(days=7)
     states = (
         session.query(ReelLatestState)
-        .filter(ReelLatestState.platform == platform)
         .filter(ReelLatestState.publish_time >= seven_days_ago)
         .all()
     )
@@ -80,15 +67,22 @@ async def reels_performance(
     return {"items": enriched}
 
 
-@app.get("/ingest/status", response_model=IngestStatus, dependencies=[Depends(require_auth)])
+@app.get("/ingest/status", response_model=IngestStatus)
 async def ingest_status(session: Session = Depends(get_session)):
     last_scraped_at = session.query(func.max(ReelRawEvent.scraped_at)).scalar()
 
-    latest_run = (
-        session.query(IngestionRun)
-        .order_by(IngestionRun.started_at.desc())
-        .first()
-    )
+    last_apify_run_id = None
+    events_last_run = 0
+    if last_scraped_at:
+        latest_run = (
+            session.query(ReelRawEvent.apify_run_id, func.count(ReelRawEvent.id))
+            .filter(ReelRawEvent.scraped_at == last_scraped_at)
+            .group_by(ReelRawEvent.apify_run_id)
+            .order_by(func.count(ReelRawEvent.id).desc())
+            .first()
+        )
+        if latest_run:
+            last_apify_run_id, events_last_run = latest_run
 
     total_raw_events = session.query(func.count(ReelRawEvent.id)).scalar() or 0
     latest_state_count = session.query(func.count(ReelLatestState.reel_id)).scalar() or 0
@@ -102,20 +96,10 @@ async def ingest_status(session: Session = Depends(get_session)):
         or 0
     )
 
-    latest_run_summary = None
-    if latest_run:
-        latest_run_summary = {
-            "apify_run_id": latest_run.apify_run_id,
-            "status": latest_run.status,
-            "events_ingested": latest_run.events_ingested,
-            "started_at": latest_run.started_at,
-            "finished_at": latest_run.finished_at,
-            "error_message": latest_run.error_message,
-        }
-
     return {
         "last_scraped_at": last_scraped_at,
-        "latest_run": latest_run_summary,
+        "last_apify_run_id": last_apify_run_id,
+        "events_last_run": events_last_run,
         "total_raw_events": total_raw_events,
         "latest_state_count": latest_state_count,
         "reels_published_last_7d": reels_published_last_7d,

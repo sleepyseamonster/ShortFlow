@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import (
     Column,
@@ -35,7 +35,7 @@ class ReelRawEvent(Base):
     duration_seconds = Column(Float)
     apify_run_id = Column(String, nullable=False)
     source_surface = Column(String, nullable=False, default="reels_feed")
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
 
     __table_args__ = (
         UniqueConstraint("reel_id", "scraped_at", "apify_run_id", name="uq_reel_scrape_run"),
@@ -59,30 +59,9 @@ class ReelLatestState(Base):
     audio_id = Column(String)
     audio_name = Column(String)
     duration_seconds = Column(Float)
-    updated_at = Column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
-    )
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
 
     __table_args__ = (
         Index("ix_reels_latest_state_publish_time", "publish_time"),
     )
 
-
-class IngestionRun(Base):
-    __tablename__ = "ingestion_runs"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    apify_run_id = Column(String, nullable=True)
-    platform = Column(String, nullable=False, default="instagram")
-    started_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
-    finished_at = Column(DateTime(timezone=True))
-    status = Column(String, nullable=False, default="running")
-    events_ingested = Column(Integer, nullable=False, default=0)
-    error_message = Column(Text)
-    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
-
-    __table_args__ = (
-        Index("ix_ingestion_runs_started_at", "started_at"),
-    )

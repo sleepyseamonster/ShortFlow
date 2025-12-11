@@ -1,4 +1,4 @@
-# ShortFlow v1
+# ShortPulse v1
 
 Performance-first Instagram Reels measurement stack. Ingest via Apify every 6 hours, store immutable raw events in Supabase/Postgres, derive percentiles for the last 7 days, and visualize on a dark-mode scatter plot.
 
@@ -9,8 +9,7 @@ Performance-first Instagram Reels measurement stack. Ingest via Apify every 6 ho
 
 ## Setup
 1) Duplicate `.env.example` to `.env` and fill in:
-   - `DATABASE_URL`: Supabase Postgres connection string (service role). For this project: `postgresql+psycopg://postgres:<service-role-password>@db.jwmcytzyhcvacjwqtynn.supabase.co:5432/postgres` (use the pooler host/port if preferred).
-   - `API_AUTH_TOKEN`: bearer token for protected ingest/status endpoints.
+   - `DATABASE_URL`: Supabase Postgres connection string (service role). For this project: `postgresql+psycopg://postgres:<service-role-password>@db.jwmcytzyhcvacjwqtynn.supabase.co:5432/postgres`
    - `APIFY_API_TOKEN`, `APIFY_ACTOR_ID`: credentials + actor for Instagram recommended Reels feed.
 2) Backend dependencies:
    ```bash
@@ -18,14 +17,15 @@ Performance-first Instagram Reels measurement stack. Ingest via Apify every 6 ho
    python -m venv .venv && source .venv/bin/activate
    pip install -r requirements.txt
    ```
-3) Apply schema (choose one):
-   - Run Alembic: `alembic upgrade head`
-   - Or paste `sql/create_reels_tables.sql` into the Supabase SQL editor (includes `ingestion_runs`).
+3) Apply migrations to Supabase:
+   ```bash
+   alembic upgrade head
+   ```
+   (Alternatively run the SQL in `sql/create_reels_tables.sql` in the Supabase SQL editor.)
 4) Run API:
    ```bash
    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
    ```
-   Or run the background worker only: `python -m app.worker`
 5) Frontend:
    ```bash
    cd frontend
@@ -36,9 +36,9 @@ Performance-first Instagram Reels measurement stack. Ingest via Apify every 6 ho
 
 ## Key Endpoints
 - `GET /health` – service status
-- `POST /ingest/run` – trigger an Apify ingestion and persist results (protected by `API_AUTH_TOKEN` if set)
-- `GET /reels/performance` – latest 7-day cohort with derived metrics, percentiles, and performance score (platform query param)
-- `GET /ingest/status` – last ingestion run summary + 7d freshness (protected by `API_AUTH_TOKEN` if set)
+- `POST /ingest/run` – trigger an Apify ingestion and persist results
+- `GET /reels/performance` – latest 7-day cohort with derived metrics, percentiles, and performance score
+- `GET /ingest/status` – last ingestion timestamps/counts and 7d freshness summary
 
 ## Background Ingestion
 - APScheduler runs the Apify pull every `INGESTION_INTERVAL_HOURS` (default 6h) when credentials are present.
@@ -50,7 +50,6 @@ Performance-first Instagram Reels measurement stack. Ingest via Apify every 6 ho
 ## Data Model
 - `reels_raw_events`: immutable observations (required + optional fields per spec).
 - `reels_latest_state`: rebuildable convenience snapshot for percentile calculations.
-- `ingestion_runs`: ingestion bookkeeping (run status, events ingested, errors).
 
 ## Derived Metrics
 - hours_since_publish, views_per_hour, engagement_rate
