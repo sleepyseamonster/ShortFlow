@@ -1,4 +1,4 @@
--- ShortFlow schema bootstrap for Supabase/Postgres
+-- ShortPulse schema bootstrap for Supabase/Postgres
 create table if not exists reels_raw_events (
     id uuid primary key default gen_random_uuid(),
     reel_id text not null,
@@ -42,4 +42,3 @@ create table if not exists reels_latest_state (
 );
 
 create index if not exists ix_reels_latest_state_publish_time on reels_latest_state (publish_time);
-

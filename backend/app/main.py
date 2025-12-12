@@ -17,7 +17,7 @@ from .scheduler import ingestion_scheduler
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="ShortFlow", version="1.0.0")
+app = FastAPI(title="ShortPulse", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,

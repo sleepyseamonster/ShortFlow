@@ -1,4 +1,4 @@
-# ShortFlow Backlog & Ideas
+# ShortPulse Backlog & Ideas
 
 Use this as the running list of tasks and future ideas. Keep items concise and scoped; move completed work into the progress log.
 
@@ -21,9 +21,10 @@ Use this as the running list of tasks and future ideas. Keep items concise and s
 - Implement rate limiting or auth token for API access.
 
 ## Frontend/UX
-- Add empty-state messaging when no data is available.
-- Add “last refreshed” indicator and manual refresh button.
+- Wire performance page filters to backend time windows (7d/30d/90d) instead of client-side filtering only.
 - Make tooltips resilient to long URLs (truncate with ellipsis).
+- Add platform filter tabs (IG/TikTok/YT) driven by backend data once ingestion expands.
+- Integrate Media Library UI with Supabase storage/auth (RLS enforced) and add uploads/listing.
 
 ## Documentation
 - Write API endpoint reference with request/response examples.
@@ -31,7 +32,5 @@ Use this as the running list of tasks and future ideas. Keep items concise and s
 - Create contributor guide (branching, linting, testing expectations).
 
 ## Later/Future (post-MVP)
-- Add time-window selector (7d/30d) backed by proper queries.
 - Multi-platform ingestion (TikTok/YouTube) with palette extensions.
 - ML experiments: early performance prediction baseline once data is sufficient.
-

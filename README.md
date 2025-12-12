@@ -1,6 +1,6 @@
 # ShortPulse v1
 
-Performance-first Instagram Reels measurement stack. Ingest via Apify every 6 hours, store immutable raw events in Supabase/Postgres, derive percentiles for the last 7 days, and visualize on a dark-mode scatter plot.
+Performance-first short-form analytics stack. Ingest via Apify every 6 hours, store immutable raw events in Supabase/Postgres, derive percentiles for the last 7 days, and explore via a simplified dashboard (Performance Analytics, Creator Studio placeholder, Media Library placeholder) with a dark-mode scatter plot.
 
 ## Tech
 - Backend: FastAPI, SQLAlchemy, Alembic, APScheduler, PostgreSQL (Supabase)
@@ -56,10 +56,14 @@ Performance-first Instagram Reels measurement stack. Ingest via Apify every 6 ho
 - Percentiles scoped to reels published in the last 7 days
 - performance_score = 0.45*engagement_rate_pct + 0.40*views_per_hour_pct + 0.15*views_pct
 
-## Visualization
-- Single scatter plot (Recharts) with:
+## Frontend surfaces
+- **Dashboard (`/`)**: Three primary cards—Performance Analytics, Creator Studio (coming soon), Media Library (secure, per-user). Quick stats on time ranges (7/30/90d), signals (views/hr, engagement), channels (IG/TikTok/YT), and security.
+- **Performance Analytics (`/performance`)**: Time-window selector (7d/30d/90d), manual refresh + sample dataset, previews with dummy thumbnails, outlier list, and scatter visualization.
+- **Creator Studio (`/creator-studio`)**: Coming-soon placeholder hero with roadmap hints.
+- **Media Library (`/media-library`)**: Placeholder hero describing per-user isolation for media/exports; hook to Supabase auth/storage with RLS.
+- Scatter plot (Recharts):
   - X: views_per_hour_percentile
   - Y: engagement_rate_percentile
   - Size: views
-  - Tooltip: URL + raw metrics
-  - Highlight: performance_score >= 95 uses Momentum Amber
+  - Tooltip: URL + raw metrics + badges
+  - Highlight: performance_score >= 95; shaded breakout quadrant

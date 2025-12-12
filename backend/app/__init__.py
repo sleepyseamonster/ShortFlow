@@ -1,2 +1,1 @@
-"""ShortFlow backend package."""
-
+"""ShortPulse backend package."""

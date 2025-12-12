@@ -1,6 +1,6 @@
 # Deployment Guide (Backend + Frontend)
 
-This guide covers running ShortFlow in a target environment (VM/container). Adjust paths and process managers as needed.
+This guide covers running ShortPulse in a target environment (VM/container). Adjust paths and process managers as needed.
 
 ## Requirements
 - Supabase/Postgres connection string (service role) in `DATABASE_URL`.
@@ -53,4 +53,3 @@ This guide covers running ShortFlow in a target environment (VM/container). Adju
 ## Zero-downtime tips
 - Run migrations before swapping traffic.
 - Start new backend instance, verify health endpoints, then switch proxy upstreams.
-

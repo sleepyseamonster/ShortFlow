@@ -8,6 +8,8 @@ Current docs:
 - `docs/api_reference.md`: endpoint details and sample payloads.
 - `docs/deployment_guide.md`: how to deploy backend/frontend with envs and process guidance.
 - `docs/run_visibility.md`: what to monitor and how to check ingestion health.
+- Frontend routes: `/` dashboard hub, `/performance` analytics view, `/creator-studio` placeholder, `/media-library` placeholder (see README for summary).
+- Dark UI palette: avoid any #21211e / #1f201c / #1e1e1b range; use #1c1f20 as the panel/base tone across surfaces.
 
 Recommended additions:
 - **Testing Guide**: how to run unit tests (metrics math, ingestion mapping) and any linting/formatting.

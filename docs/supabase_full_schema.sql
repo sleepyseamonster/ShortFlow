@@ -1,8 +1,8 @@
 /*
-  # ShortFlow - Complete Database Schema
+  # ShortPulse - Complete Database Schema
   
   This comprehensive migration creates all tables, functions, indexes, and RLS policies
-  for the ShortFlow reel analytics platform.
+  for the ShortPulse reel analytics platform.
   
   Tables:
   - reels: Main reel data with metrics
